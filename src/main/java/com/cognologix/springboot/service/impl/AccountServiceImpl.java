@@ -1,114 +1,96 @@
 package com.cognologix.springboot.service.impl;
 
-import com.cognologix.springboot.dto.BaseResponse;
+import com.cognologix.springboot.dao.AccountDao;
+import com.cognologix.springboot.dto.bankaccount.AccountDTO;
 import com.cognologix.springboot.dto.bankaccount.AccountListResponse;
 import com.cognologix.springboot.dto.bankaccount.AccountResponse;
+import com.cognologix.springboot.dto.bankaccount.DepositWithdrawAmount;
 import com.cognologix.springboot.entities.Account;
 import com.cognologix.springboot.exception.AccountNotFoundException;
+import com.cognologix.springboot.exception.EmptyListException;
 import com.cognologix.springboot.exception.InSufficientBalanceException;
+import com.cognologix.springboot.exception.NameAlreadyExistException;
 import com.cognologix.springboot.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class AccountServiceImpl implements AccountService {
     @Autowired
-    private static List<Account> accountList = new ArrayList<>();
-    @Override
-    public BaseResponse addAccount(Account acc) {
-        Account account = new Account();
-        if(accountList != null) {
-            account.setAccountNumber(acc.getAccountNumber());
-            account.setFullName(acc.getFullName());
-            account.setPhone(acc.getPhone());
-            account.setBalance(acc.getBalance());
-            accountList.add(account);
-        }
-        return new AccountResponse(account);
-    }
+    private AccountDao accountDao;
 
     @Override
-    public void displayAnAccount(String accountNumber) throws AccountNotFoundException {
-        if (accountList != null) {
-            for (Account arr : accountList) {
-                if(arr != null) {
-                    if (arr.getAccountNumber().equals(accountNumber)) {
-                        System.out.println(arr.toString());
-                        break;
-                    }
-                }
-            }
-            throw new AccountNotFoundException("Account Not Exist");
+    public AccountResponse addAccount(AccountDTO acc) throws NameAlreadyExistException {
+        if (accountDao.findAccountByAccountNumber(acc.getAccountNumber()) != null) {
+            throw new NameAlreadyExistException("Account already exist");
+        } else {
+            return new AccountResponse(accountDao.save(new Account(acc)));
         }
     }
 
     @Override
-    public BaseResponse displayAllAccounts() throws AccountNotFoundException {
-        if (accountList == null) {
-            throw new AccountNotFoundException("Account number not found.");
+    public Account getAccountById(int id) throws AccountNotFoundException {
+        if ((id <= 0)) {
+            throw new AccountNotFoundException("Account Not Exist" + id);
+        }
+        return accountDao.findById(id).get();
+
+    }
+
+    @Override
+    public AccountListResponse getAccounts() throws EmptyListException {
+        List<Account> accountList = accountDao.findAll();
+        if (accountList.isEmpty()) {
+            throw new EmptyListException("Account List is empty");
         }
         return new AccountListResponse(accountList, accountList.size());
     }
 
     @Override
-    public void withdraw(String accountNumber) throws InSufficientBalanceException, AccountNotFoundException {
-        long amount = 0;
+    public AccountResponse withdrawAmount(DepositWithdrawAmount withdrawAmount) throws InSufficientBalanceException, NullPointerException {
         double balance;
-        System.out.println("Enter Amount you Want to withdraw : ");
-       // amount = sc.nextLong();
-        if (accountList != null) {
-            for (Account account : accountList) {
-                if (account.getAccountNumber().equals(accountNumber)) {
-                    if (account.getBalance() >= amount) {
-                        balance = account.getBalance() - amount;
-                        account.setBalance(balance);
-                        System.out.println(account.toString());
-                        break;
-                    } else {
-                        throw new InSufficientBalanceException("Less Balance..Transaction Failed..");
-                    }
-                }
-                System.out.println("Account Number Not Found");
-            }
-        }
-    }
-
-    @Override
-    public void deposit(String accountNumber) throws AccountNotFoundException {
-        long amount = 0;
-        double balance;
-        System.out.println("Enter Amount you Want to Deposit : ");
-       // amount = sc.nextLong();
-        if (accountList != null) {
-            for (Account account : accountList) {
-                if (account != null) {
-                    if (account.getAccountNumber().equals(accountNumber)) {
-                        balance = account.getBalance() + amount;
-                        account.setBalance(balance);
-                        System.out.println(account.toString());
-                        break;
-                    }
+        Account account = accountDao.findAccountByAccountNumber(withdrawAmount.getAccountNumber());
+        if (account == null) {
+            throw new NullPointerException("Null Pointer Exception");
+        } else {
+            if (account.getAccountNumber().equals(withdrawAmount.getAccountNumber())) {
+                if (account.getBalance() >= withdrawAmount.getAmount()) {
+                    balance = account.getBalance() - withdrawAmount.getAmount();
+                    account.setBalance(balance);
+                } else {
+                    throw new InSufficientBalanceException("Less Balance..Transaction Failed..");
                 }
             }
         }
-        System.out.println("Account Number Not Exist");
+        return new AccountResponse(accountDao.save(account));
     }
 
     @Override
-    public boolean removeAnAccount(String accountNumber) {
-        if (accountList != null) {
-            Account account = new Account();
-            account.setAccountNumber(accountNumber);
-            if(accountList.contains(account)) {
-                accountList.remove(account);
-                return true;
-            }else {
-                System.out.println("Account Not exist");
+    public AccountResponse depositAmount(DepositWithdrawAmount depositAmount) throws AccountNotFoundException, NullPointerException {
+        double balance;
+        Account account = accountDao.findAccountByAccountNumber(depositAmount.getAccountNumber());
+        if (account == null) {
+            throw new NullPointerException("Null Pointer Exception");
+        } else {
+            if (account.getAccountNumber().equals(depositAmount.getAccountNumber())) {
+                balance = account.getBalance() + depositAmount.getAmount();
+                account.setBalance(balance);
+            } else {
+                throw new AccountNotFoundException("Account Not Exist");
             }
         }
-        return false;
+        return new AccountResponse(accountDao.save(account));
+    }
+
+    @Override
+    public void deleteAccount(int id) {
+        Account entity = accountDao.getOne(id);
+        if (accountDao.existsById(id)) {
+            accountDao.delete(entity);
+        } else {
+            System.out.println("Account Not exist");
+        }
     }
 }
