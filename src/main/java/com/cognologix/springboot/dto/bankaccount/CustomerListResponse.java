@@ -1,30 +1,30 @@
 package com.cognologix.springboot.dto.bankaccount;
 
 import com.cognologix.springboot.dto.BaseResponse;
-import com.cognologix.springboot.entities.Account;
+import com.cognologix.springboot.entities.Customer;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.List;
 
 /**
- * The type Account list response.
+ * The type Customer list response.
  */
 @Getter
 @Setter
-public class AccountListResponse extends BaseResponse {
-    private List<Account> accountList;
+public class CustomerListResponse extends BaseResponse {
+    private List<Customer> customerList;
     private Integer size;
 
     /**
-     * Instantiates a new Account list response.
+     * Instantiates a new Customer list response.
      *
      * @param acc  the acc
      * @param size the size
      */
-    public AccountListResponse(List<Account> acc, Integer size) {
+    public CustomerListResponse(List<Customer> acc, Integer size) {
         super(true);
-        accountList = acc;
+        customerList = acc;
         this.size = size;
     }
 }

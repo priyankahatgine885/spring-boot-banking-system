@@ -1,33 +1,49 @@
 package com.cognologix.springboot.service.impl;
 
 import com.cognologix.springboot.dao.AccountDao;
+import com.cognologix.springboot.dao.CustomerDao;
 import com.cognologix.springboot.dto.bankaccount.AccountDTO;
 import com.cognologix.springboot.dto.bankaccount.AccountListResponse;
 import com.cognologix.springboot.dto.bankaccount.AccountResponse;
-import com.cognologix.springboot.dto.bankaccount.DepositWithdrawAmount;
 import com.cognologix.springboot.entities.Account;
-import com.cognologix.springboot.exception.AccountNotFoundException;
-import com.cognologix.springboot.exception.EmptyListException;
-import com.cognologix.springboot.exception.InSufficientBalanceException;
-import com.cognologix.springboot.exception.NameAlreadyExistException;
+import com.cognologix.springboot.entities.Customer;
+import com.cognologix.springboot.exception.*;
 import com.cognologix.springboot.service.AccountService;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.Random;
 
+/**
+ * The type Account service.
+ */
 @Service
+@Log4j2
 public class AccountServiceImpl implements AccountService {
     @Autowired
     private AccountDao accountDao;
 
+    @Autowired
+    private CustomerDao customerDao;
+
     @Override
-    public AccountResponse addAccount(AccountDTO acc) throws NameAlreadyExistException {
-        if (accountDao.findAccountByAccountNumber(acc.getAccountNumber()) != null) {
-            throw new NameAlreadyExistException("Account already exist");
+    public AccountResponse addAccount(AccountDTO accountDTO) throws NameAlreadyExistException, CustomerNotFoundException {
+        Customer customer = null;
+        if (Objects.nonNull(accountDTO.getCustomerInfo().getId())) {
+            customer = customerDao.findCustomerById(accountDTO.getCustomerInfo().getId());
+            if (Objects.isNull(customer)) {
+                throw new CustomerNotFoundException("Invalid customer ID.");
+            }
         } else {
-            return new AccountResponse(accountDao.save(new Account(acc)));
+            customer = customerDao.save(new Customer(accountDTO.getCustomerInfo()));
         }
+        Account account = new Account(accountDTO);
+        account.setCustomerInfo(customer);
+        account.setAccountNumber(generateAccountNumber());
+        return new AccountResponse(accountDao.save(account));
     }
 
     @Override
@@ -49,38 +65,31 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public AccountResponse withdrawAmount(DepositWithdrawAmount withdrawAmount) throws InSufficientBalanceException, NullPointerException {
-        double balance;
-        Account account = accountDao.findAccountByAccountNumber(withdrawAmount.getAccountNumber());
-        if (account == null) {
-            throw new NullPointerException("Null Pointer Exception");
-        } else {
-            if (account.getAccountNumber().equals(withdrawAmount.getAccountNumber())) {
-                if (account.getBalance() >= withdrawAmount.getAmount()) {
-                    balance = account.getBalance() - withdrawAmount.getAmount();
-                    account.setBalance(balance);
-                } else {
-                    throw new InSufficientBalanceException("Less Balance..Transaction Failed..");
-                }
-            }
+    public AccountResponse withdrawAmount(String accountNumber, double amount) throws InSufficientBalanceException, CustomerNotFoundException, InvalidAmountException {
+        Account account = accountDao.findAccountByAccountNumber(accountNumber);
+        if (Objects.isNull(account)) {
+            throw new CustomerNotFoundException("Invalid customer account number.");
         }
+        if ((account.getBalance() < amount)) {
+            throw new InSufficientBalanceException("InSufficient Balance. Transaction Failed..");
+        }
+        if (amount < 0) {
+            throw new InvalidAmountException("Amount should be positive number");
+        }
+        account.setBalance(account.getBalance() - amount);
         return new AccountResponse(accountDao.save(account));
     }
 
     @Override
-    public AccountResponse depositAmount(DepositWithdrawAmount depositAmount) throws AccountNotFoundException, NullPointerException {
-        double balance;
-        Account account = accountDao.findAccountByAccountNumber(depositAmount.getAccountNumber());
-        if (account == null) {
-            throw new NullPointerException("Null Pointer Exception");
-        } else {
-            if (account.getAccountNumber().equals(depositAmount.getAccountNumber())) {
-                balance = account.getBalance() + depositAmount.getAmount();
-                account.setBalance(balance);
-            } else {
-                throw new AccountNotFoundException("Account Not Exist");
-            }
+    public AccountResponse depositAmount(String accountNumber, double amount) throws CustomerNotFoundException, InvalidAmountException {
+        Account account = accountDao.findAccountByAccountNumber(accountNumber);
+        if (Objects.isNull(account)) {
+            throw new CustomerNotFoundException("Invalid customer account number.");
         }
+        if (amount < 0) {
+            throw new InvalidAmountException("Amount should be positive number");
+        }
+        account.setBalance(account.getBalance() + amount);
         return new AccountResponse(accountDao.save(account));
     }
 
@@ -90,7 +99,24 @@ public class AccountServiceImpl implements AccountService {
         if (accountDao.existsById(id)) {
             accountDao.delete(entity);
         } else {
-            System.out.println("Account Not exist");
+            log.info("Account Not exist");
         }
+    }
+
+    @Override
+    public void transferAmount(String fromAccountNo, String toAccountNo, double amount) throws InSufficientBalanceException, CustomerNotFoundException, InvalidAmountException {
+        withdrawAmount(fromAccountNo, amount);
+        depositAmount(toAccountNo, amount);
+    }
+
+    private String generateAccountNumber() {
+        Random rand = new Random();
+        StringBuilder card = new StringBuilder();
+        for (int i = 0; i < 14; i++) {
+            int n = rand.nextInt(10);
+            card.append(n);
+        }
+        return card.toString();
+
     }
 }

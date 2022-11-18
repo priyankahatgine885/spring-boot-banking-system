@@ -10,15 +10,20 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.Date;
 
+/**
+ * The type Account.
+ */
 @Entity
 @Table(name = "account")
 @Getter
 @Setter
 @NoArgsConstructor
 @ToString
+
 public class Account implements Serializable {
 
     @Id
@@ -26,20 +31,27 @@ public class Account implements Serializable {
     private int id;
 
     @NotBlank
+    @Size(max = 15)
     @Column(name = "account_number")
     private String accountNumber;
 
-    @NotBlank
-    @Column(name = "full_Name")
-    private String fullName;
+
+//    @NotBlank
+//    @Column(name = "bankInfo")
+//    private BankInfo bankInfo;
 
     @NotBlank
-    @Column(name = "phone")
-    private String phone;
+    @ManyToOne(cascade = CascadeType.MERGE)
+    @JoinColumn(name = "customer_id", nullable = false)
+    private Customer customerInfo;
 
     @NotBlank
     @Column(name = "balance")
     private double balance;
+
+    @NotBlank
+    @Column(name = "accountType")
+    private Integer accountType;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_dt")
@@ -52,13 +64,15 @@ public class Account implements Serializable {
     @UpdateTimestamp
     private Date modifiedDt;
 
-    public Account(AccountDTO acc){
-        this.setAccountNumber(acc.getAccountNumber());
-        this.setFullName(acc.getFullName());
-        this.setPhone(acc.getPhone());
-        this.setBalance(acc.getBalance());
-        this.setCreatedDt(acc.getCreatedDt());
-        this.setModifiedDt(acc.getModifiedDt());
+    /**
+     * Instantiates a new Account.
+     *
+     * @param acc the acc
+     */
+    public Account(AccountDTO acc) {
+        accountNumber = acc.getAccountNumber();
+        balance = acc.getBalance();
+        accountType = acc.getAccountType().getId();
     }
 
 }

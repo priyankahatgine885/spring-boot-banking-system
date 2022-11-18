@@ -1,22 +1,42 @@
 package com.cognologix.springboot.dto.bankaccount;
 
+import com.cognologix.springboot.entities.Account;
+import com.cognologix.springboot.entities.AccountType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
 import java.util.Date;
 
+/**
+ * The type Account dto.
+ */
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class AccountDTO {
-    private Long id;
+    private Integer id;
     private String accountNumber;
-    private String fullName;
-    private String phone;
-    private double balance;
+
+    private CustomerDTO customerInfo;
+    private Double balance;
+    private AccountType accountType;
+
     private Date createdDt;
+
     private Date modifiedDt;
 
+    /**
+     * Instantiates a new Account dto.
+     *
+     * @param account the account
+     */
+    public AccountDTO(Account account) {
+        id = account.getId();
+        accountNumber = account.getAccountNumber();
+        balance = account.getBalance();
+        accountType = AccountType.getById(account.getAccountType());
+    }
 }
