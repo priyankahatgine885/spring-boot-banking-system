@@ -3,6 +3,7 @@ package com.cognologix.springboot.controller;
 import com.cognologix.springboot.dto.bankaccount.AccountDTO;
 import com.cognologix.springboot.dto.bankaccount.AccountListResponse;
 import com.cognologix.springboot.dto.bankaccount.AccountResponse;
+import com.cognologix.springboot.dto.bankaccount.TransferAmountDTO;
 import com.cognologix.springboot.entities.Account;
 import com.cognologix.springboot.service.AccountService;
 import lombok.extern.log4j.Log4j2;
@@ -71,7 +72,7 @@ public class AccountController {
         HttpStatus statusCode = null;
         try {
             response = accountService.getAccounts();
-            response.setMessage("'GET method' received request ");
+            response.setMessage("Get account successfully");
             statusCode = response.getSuccess() ? HttpStatus.OK : HttpStatus.NO_CONTENT;
         } catch (RuntimeException ex) {
             ex.getMessage();
@@ -128,19 +129,15 @@ public class AccountController {
     /**
      * Transfer amount response entity.
      *
-     * @param fromAccountNumber the from account no
-     * @param toAccountNumber   the to account no
-     * @param amount            the amount
+     * @param transferAmountDTO the amount
      * @return the response entity
      */
     @PutMapping("/account/transfer")
-    public ResponseEntity<AccountResponse> transferAmount(@RequestParam(value = "fromAccountNumber") String fromAccountNumber,
-                                                          @RequestParam(value = "toAccountNumber") String toAccountNumber,
-                                                          @RequestParam(value = "amount") double amount) {
+    public ResponseEntity<AccountResponse> transferAmount(@RequestBody TransferAmountDTO transferAmountDTO) {
         AccountResponse response = null;
         HttpStatus statusCode = null;
         try {
-            accountService.transferAmount(fromAccountNumber, toAccountNumber, amount);
+            accountService.transferAmount(transferAmountDTO);
             response = new AccountResponse(true);
             response.setMessage("Transaction Successful");
             statusCode = response.getSuccess() ? HttpStatus.OK : HttpStatus.BAD_REQUEST;

@@ -3,49 +3,50 @@ package com.cognologix.springboot.entities;
 import java.util.HashMap;
 import java.util.Map;
 
-
 /**
- * The enum Account type.
+ * The enum Transaction type.
  */
-public enum AccountType {
+public enum TransactionType {
 
     /**
-     * Saving account type.
+     * Deposit transaction type.
      */
-    SAVING(1, "Saving"),
+    DEPOSIT(1, "Deposit"),
+
 
     /**
-     * The Fixed deposit.
+     * Withdraw transaction type.
      */
-    FIXED_DEPOSIT(2, "Fixed Deposit"),
+    WITHDRAW(2, "Withdraw"),
 
     /**
-     * Current account type.
+     * Cheque transaction type.
      */
-    CURRENT(3, "Current"),
+    CHEQUE(3, "CHEQUE"),
 
     /**
-     * The Recurring deposit.
+     * Onlinepayments transaction type.
      */
-    RECURRING_DEPOSIT(4, "Recurring Deposit");
+    ONLINEPAYMENTS(4, "ONLINEPAYMENTS");
 
     private final Integer id;
     private final String name;
 
-    private static final Map<Integer, AccountType> byId = new HashMap<>();
+    private static final Map<Integer, TransactionType> byId = new HashMap<>();
 
     static {
-        for (AccountType e : AccountType.values()) {
+        for (TransactionType e : TransactionType.values()) {
             if (byId.put(e.getId(), e) != null) {
                 throw new IllegalArgumentException("duplicate id: " + e.getId());
             }
         }
     }
 
-    AccountType(int id, String name) {
+    TransactionType(Integer id, String name) {
         this.id = id;
         this.name = name;
     }
+
 
     /**
      * Gets by id.
@@ -53,7 +54,7 @@ public enum AccountType {
      * @param id the id
      * @return the by id
      */
-    public static AccountType getById(Integer id) {
+    public static TransactionType getById(Integer id) {
         return byId.get(id);
     }
 
@@ -66,6 +67,7 @@ public enum AccountType {
         return name;
     }
 
+
     /**
      * Gets id.
      *
@@ -74,4 +76,5 @@ public enum AccountType {
     public Integer getId() {
         return id;
     }
+
 }

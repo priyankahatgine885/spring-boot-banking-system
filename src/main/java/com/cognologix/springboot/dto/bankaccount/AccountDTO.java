@@ -36,6 +36,7 @@ public class AccountDTO {
     public AccountDTO(Account account) {
         id = account.getId();
         accountNumber = account.getAccountNumber();
+        customerInfo = new CustomerDTO(account.getCustomerInfo());
         balance = account.getBalance();
         accountType = AccountType.getById(account.getAccountType());
     }

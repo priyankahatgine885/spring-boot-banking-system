@@ -5,6 +5,7 @@ import com.cognologix.springboot.dao.CustomerDao;
 import com.cognologix.springboot.dto.bankaccount.AccountDTO;
 import com.cognologix.springboot.dto.bankaccount.AccountListResponse;
 import com.cognologix.springboot.dto.bankaccount.AccountResponse;
+import com.cognologix.springboot.dto.bankaccount.TransferAmountDTO;
 import com.cognologix.springboot.entities.Account;
 import com.cognologix.springboot.entities.Customer;
 import com.cognologix.springboot.exception.*;
@@ -30,7 +31,7 @@ public class AccountServiceImpl implements AccountService {
     private CustomerDao customerDao;
 
     @Override
-    public AccountResponse addAccount(AccountDTO accountDTO) throws NameAlreadyExistException, CustomerNotFoundException {
+    public AccountResponse addAccount(AccountDTO accountDTO) throws DuplicateCustomerDetailsNotAllowed, CustomerNotFoundException {
         Customer customer = null;
         if (Objects.nonNull(accountDTO.getCustomerInfo().getId())) {
             customer = customerDao.findCustomerById(accountDTO.getCustomerInfo().getId());
@@ -51,6 +52,8 @@ public class AccountServiceImpl implements AccountService {
         if ((id <= 0)) {
             throw new AccountNotFoundException("Account Not Exist" + id);
         }
+        AccountDTO a = new AccountDTO(accountDao.findById(id).get());
+
         return accountDao.findById(id).get();
 
     }
@@ -104,9 +107,15 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public void transferAmount(String fromAccountNo, String toAccountNo, double amount) throws InSufficientBalanceException, CustomerNotFoundException, InvalidAmountException {
-        withdrawAmount(fromAccountNo, amount);
-        depositAmount(toAccountNo, amount);
+    public void transferAmount(TransferAmountDTO transferAmountDTO) throws InSufficientBalanceException, CustomerNotFoundException, InvalidAmountException {
+        if (transferAmountDTO.getAmount() < 0) {
+            throw new InvalidAmountException("Amount should be positive number");
+        }
+        Account account = accountDao.findAccountByAccountNumber(transferAmountDTO.getFromAccountNumber());
+        if (account.getBalance() >= 50000) {
+            withdrawAmount(transferAmountDTO.getFromAccountNumber(), transferAmountDTO.getAmount());
+        }
+        depositAmount(transferAmountDTO.getToAccountNumber(), transferAmountDTO.getAmount());
     }
 
     private String generateAccountNumber() {

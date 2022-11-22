@@ -71,6 +71,7 @@ public class Account implements Serializable {
      */
     public Account(AccountDTO acc) {
         accountNumber = acc.getAccountNumber();
+        customerInfo = new Customer(acc.getCustomerInfo());
         balance = acc.getBalance();
         accountType = acc.getAccountType().getId();
     }

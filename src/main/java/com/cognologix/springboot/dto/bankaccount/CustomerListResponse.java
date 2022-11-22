@@ -19,12 +19,12 @@ public class CustomerListResponse extends BaseResponse {
     /**
      * Instantiates a new Customer list response.
      *
-     * @param acc  the acc
-     * @param size the size
+     * @param customers the acc
+     * @param size      the size
      */
-    public CustomerListResponse(List<Customer> acc, Integer size) {
+    public CustomerListResponse(List<Customer> customers, Integer size) {
         super(true);
-        customerList = acc;
+        customerList = customers;
         this.size = size;
     }
 }

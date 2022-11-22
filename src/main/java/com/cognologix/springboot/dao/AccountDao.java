@@ -14,4 +14,5 @@ public interface AccountDao extends JpaRepository<Account, Integer> {
      * @return the account
      */
     Account findAccountByAccountNumber(String accountNumber);
+
 }

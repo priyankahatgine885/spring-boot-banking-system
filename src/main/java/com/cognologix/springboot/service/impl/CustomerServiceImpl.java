@@ -6,13 +6,15 @@ import com.cognologix.springboot.dto.bankaccount.CustomerListResponse;
 import com.cognologix.springboot.dto.bankaccount.CustomerResponse;
 import com.cognologix.springboot.entities.Customer;
 import com.cognologix.springboot.exception.AccountNotFoundException;
+import com.cognologix.springboot.exception.CustomerNotFoundException;
+import com.cognologix.springboot.exception.DuplicateCustomerDetailsNotAllowed;
 import com.cognologix.springboot.exception.EmptyListException;
-import com.cognologix.springboot.exception.NameAlreadyExistException;
 import com.cognologix.springboot.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * The type Customer service.
@@ -23,12 +25,11 @@ public class CustomerServiceImpl implements CustomerService {
     private CustomerDao customerDao;
 
     @Override
-    public CustomerResponse addCustomer(CustomerDTO customer) throws NameAlreadyExistException {
-        if (customerDao.findCustomerById(customer.getId()) != null) {
-            throw new NullPointerException("Null Pointer Exception");
-        } else {
-            return new CustomerResponse(customerDao.save(new Customer(customer)));
+    public CustomerResponse addCustomer(CustomerDTO customer) throws DuplicateCustomerDetailsNotAllowed, CustomerNotFoundException {
+        if (Objects.isNull(customer)) {
+            throw new CustomerNotFoundException("Customer not found");
         }
+        return new CustomerResponse(customerDao.save(new Customer(customer)));
     }
 
     @Override
@@ -43,15 +44,15 @@ public class CustomerServiceImpl implements CustomerService {
     public CustomerListResponse getCustomers() throws EmptyListException {
         List<Customer> customerList = customerDao.findAll();
         if (customerList.isEmpty()) {
-            throw new EmptyListException("Account List is empty");
+            throw new EmptyListException("Customer List is empty");
         }
         return new CustomerListResponse(customerList, customerList.size());
     }
 
     @Override
-    public CustomerResponse updateCustomer(int id, Customer customer) {
+    public CustomerResponse updateCustomer(int id, CustomerDTO customer) {
         Customer customers = customerDao.findById(id).get();
-        if (customer == null) {
+        if (Objects.isNull(customers)) {
             throw new NullPointerException("Null Pointer Exception");
         }
         customers.setFirstName(customer.getFirstName());

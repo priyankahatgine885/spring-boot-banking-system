@@ -5,8 +5,9 @@ import com.cognologix.springboot.dto.bankaccount.CustomerListResponse;
 import com.cognologix.springboot.dto.bankaccount.CustomerResponse;
 import com.cognologix.springboot.entities.Customer;
 import com.cognologix.springboot.exception.AccountNotFoundException;
+import com.cognologix.springboot.exception.CustomerNotFoundException;
+import com.cognologix.springboot.exception.DuplicateCustomerDetailsNotAllowed;
 import com.cognologix.springboot.exception.EmptyListException;
-import com.cognologix.springboot.exception.NameAlreadyExistException;
 
 /**
  * The interface Customer service.
@@ -17,9 +18,10 @@ public interface CustomerService {
      *
      * @param customer the customer
      * @return the customer response
-     * @throws NameAlreadyExistException the name already exist exception
+     * @throws DuplicateCustomerDetailsNotAllowed the name already exist exception
+     * @throws CustomerNotFoundException          the customer not found exception
      */
-    CustomerResponse addCustomer(CustomerDTO customer) throws NameAlreadyExistException;
+    CustomerResponse addCustomer(CustomerDTO customer) throws DuplicateCustomerDetailsNotAllowed, CustomerNotFoundException;
 
     /**
      * Gets customer by id.
@@ -41,11 +43,11 @@ public interface CustomerService {
     /**
      * Update customer customer response.
      *
-     * @param id       the id
-     * @param customer the customer
+     * @param id          the id
+     * @param customerDTO the customer dto
      * @return the customer response
      */
-    CustomerResponse updateCustomer(int id, Customer customer);
+    CustomerResponse updateCustomer(int id, CustomerDTO customerDTO);
 
     /**
      * Delete customer.

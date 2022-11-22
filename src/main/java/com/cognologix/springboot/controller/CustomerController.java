@@ -83,7 +83,7 @@ public class CustomerController {
      * @return the response entity
      */
     @PutMapping("/customer/{id}")
-    public ResponseEntity<CustomerResponse> updateCustomer(@PathVariable int id, @RequestBody Customer customer) {
+    public ResponseEntity<CustomerResponse> updateCustomer(@PathVariable int id, @RequestBody CustomerDTO customer) {
         try {
             CustomerResponse response = customerService.updateCustomer(id, customer);
             response.setMessage("Customer updated successfully");

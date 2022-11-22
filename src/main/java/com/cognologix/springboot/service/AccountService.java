@@ -3,6 +3,7 @@ package com.cognologix.springboot.service;
 import com.cognologix.springboot.dto.bankaccount.AccountDTO;
 import com.cognologix.springboot.dto.bankaccount.AccountListResponse;
 import com.cognologix.springboot.dto.bankaccount.AccountResponse;
+import com.cognologix.springboot.dto.bankaccount.TransferAmountDTO;
 import com.cognologix.springboot.entities.Account;
 import com.cognologix.springboot.exception.*;
 
@@ -15,10 +16,10 @@ public interface AccountService {
      *
      * @param account the account
      * @return the account response
-     * @throws NameAlreadyExistException the name already exist exception
-     * @throws CustomerNotFoundException the customer not found exception
+     * @throws DuplicateCustomerDetailsNotAllowed the name already exist exception
+     * @throws CustomerNotFoundException          the customer not found exception
      */
-    AccountResponse addAccount(AccountDTO account) throws NameAlreadyExistException, CustomerNotFoundException;
+    AccountResponse addAccount(AccountDTO account) throws DuplicateCustomerDetailsNotAllowed, CustomerNotFoundException;
 
     /**
      * Gets account by id.
@@ -44,7 +45,8 @@ public interface AccountService {
      * @param amount    the amount
      * @return the account response
      * @throws InSufficientBalanceException the in sufficient balance exception
-     * @throws NullPointerException         the null pointer exception
+     * @throws CustomerNotFoundException    the customer not found exception
+     * @throws InvalidAmountException       the invalid amount exception
      */
     AccountResponse withdrawAmount(String accountNo, double amount) throws InSufficientBalanceException, CustomerNotFoundException, InvalidAmountException;
 
@@ -54,8 +56,10 @@ public interface AccountService {
      * @param accountNo the account no
      * @param amount    the amount
      * @return the account response
-     * @throws AccountNotFoundException the account not found exception
-     * @throws NullPointerException     the null pointer exception
+     * @throws AccountNotFoundException  the account not found exception
+     * @throws NullPointerException      the null pointer exception
+     * @throws CustomerNotFoundException the customer not found exception
+     * @throws InvalidAmountException    the invalid amount exception
      */
     AccountResponse depositAmount(String accountNo, double amount) throws AccountNotFoundException, NullPointerException, CustomerNotFoundException, InvalidAmountException;
 
@@ -69,11 +73,11 @@ public interface AccountService {
     /**
      * Transfer amount.
      *
-     * @param fromAccountNo the from account no
-     * @param toAccountNo   the to account no
-     * @param amount        the amount
+     * @param transferAmountDTO the transfer amount dto
      * @throws AccountNotFoundException     the account not found exception
      * @throws InSufficientBalanceException the in sufficient balance exception
+     * @throws CustomerNotFoundException    the customer not found exception
+     * @throws InvalidAmountException       the invalid amount exception
      */
-    void transferAmount(String fromAccountNo, String toAccountNo, double amount) throws AccountNotFoundException, InSufficientBalanceException, CustomerNotFoundException, InvalidAmountException;
+    void transferAmount(TransferAmountDTO transferAmountDTO) throws AccountNotFoundException, InSufficientBalanceException, CustomerNotFoundException, InvalidAmountException;
 }
